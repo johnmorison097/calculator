@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grade Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e9ecef;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .add-section {
+      display: flex;
+      gap: 10px;
+    }
+    .add-section input {
+      flex: 1;
+    }
+    .add-section button {
+      flex: 0;
+      padding: 10px 15px;
+      width: auto;
+    }
+    /* Popup styles */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 1; 
+      left: 0;
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgb(0,0,0); 
+      background-color: rgba(0,0,0,0.4); 
+      padding-top: 60px; 
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto; 
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%; 
+      text-align: center;
+      border-radius: 8px;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>GPA Grade Calculator</h2>
+
+    <label>Lab Available?</label>
+    <input type="checkbox" id="labAvailable">
+
+    <div id="creditHoursSection" style="display: none;">
+      <label for="creditHours">Credit Hours:</label>
+      <input type="number" id="creditHours" placeholder="Enter credit hours (e.g., 3 or 4)" min="1" max="4">
+    </div>
+
+    <label>Quiz Scores:</label>
+    <div id="quizSection">
+      <div class="add-section">
+        <input type="number" placeholder="Enter obtained marks" class="quizObtained">
+        <input type="number" placeholder="Enter total marks" class="quizTotal">
+        <button type="button" onclick="addQuiz()">+</button>
+      </div>
+    </div>
+
+    <label>Assignment Scores:</label>
+    <div id="assignmentSection">
+      <div class="add-section">
+        <input type="number" placeholder="Enter obtained marks" class="assignmentObtained">
+        <input type="number" placeholder="Enter total marks" class="assignmentTotal">
+        <button type="button" onclick="addAssignment()">+</button>
+      </div>
+    </div>
+
+    <label>Mid Term Marks:</label>
+    <div id="midSection">
+      <div class="add-section">
+        <input type="number" placeholder="Enter obtained marks" id="midObtained">
+        <input type="number" placeholder="Enter total marks" id="midTotal">
+      </div>
+    </div>
+
+    <label>Final Term Marks:</label>
+    <div id="finalSection">
+      <div class="add-section">
+        <input type="number" placeholder="Enter obtained marks" id="finalObtained">
+        <input type="number" placeholder="Enter total marks" id="finalTotal">
+      </div>
+    </div>
+
+    <div id="labSection" style="display: none;">
+      <label>Lab Mid-Term Marks:</label>
+      <div class="add-section">
+        <input type="number" placeholder="Enter obtained marks" id="labMidObtained">
+        <input type="number" placeholder="Enter total marks" id="labMidTotal">
+      </div>
+
+      <label>Lab Final-Term Marks:</label>
+      <div class="add-section">
+        <input type="number" placeholder="Enter obtained marks" id="labFinalObtained">
+        <input type="number" placeholder="Enter total marks" id="labFinalTotal">
+      </div> 
+
+      <label>Lab Assignments:</label>
+      <div class="add-section">
+        <input type="number" placeholder="Enter obtained marks" class="labAssignmentObtained">
+        <input type="number" placeholder="Enter total marks" class="labAssignmentTotal">
+        <button type="button" onclick="addLabAssignment()">+</button>
+      </div>
+    </div>
+
+    <button onclick="calculateGrade()">Calculate Grade</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <!-- Modal for displaying results -->
+  <div id="resultModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Your Result</h2>
+      <p id="modalScore"></p>
+      <p id="modalGrade"></p>
+      <p id="modalEmoji"></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('labAvailable').addEventListener('change', function() {
+      document.getElementById('labSection').style.display = this.checked ? 'block' : 'none';
+      document.getElementById('creditHoursSection').style.display = this.checked ? 'block' : 'none';
+    });
+
+    function addQuiz() {
+      const quizSection = document.getElementById('quizSection');
+      const div = document.createElement('div');
+      div.className = 'add-section';
+      div.innerHTML = ` 
+        <input type="number" placeholder="Enter obtained marks" class="quizObtained">
+        <input type="number" placeholder="Enter total marks" class="quizTotal">
+        <button type="button" onclick="removeElement(this)">-</button>
+      `;
+      quizSection.appendChild(div);
+    }
+
+    function addAssignment() {
+      const assignmentSection = document.getElementById('assignmentSection');
+      const div = document.createElement('div');
+      div.className = 'add-section';
+      div.innerHTML = `
+        <input type="number" placeholder="Enter obtained marks" class="assignmentObtained">
+        <input type="number" placeholder="Enter total marks" class="assignmentTotal">
+        <button type="button" onclick="removeElement(this)">-</button>
+      `;
+      assignmentSection.appendChild(div);
+    }
+
+    function addLabAssignment() {
+      const labAssignmentSection = document.getElementById('labSection');
+      const div = document.createElement('div');
+      div.className = 'add-section';
+      div.innerHTML = `
+        <input type="number" placeholder="Enter obtained marks" class="labAssignmentObtained">
+        <input type="number" placeholder="Enter total marks" class="labAssignmentTotal">
+        <button type="button" onclick="removeElement(this)">-</button>
+      `;
+      labAssignmentSection.appendChild(div);
+    }
+
+    function removeElement(button) {
+      button.parentElement.remove();
+    }
+
+    function calculateGrade() {
+      const creditHours = parseFloat(document.getElementById('creditHours').value) || 0;
+      const labAvailable = document.getElementById('labAvailable').checked;
+      
+      const midObtained = parseFloat(document.getElementById('midObtained').value) || 0;
+      const midTotal = parseFloat(document.getElementById('midTotal').value) || 0;
+      const finalObtained = parseFloat(document.getElementById('finalObtained').value) || 0;
+      const finalTotal = parseFloat(document.getElementById('finalTotal').value) || 0;
+
+      let quizObtained = 0, quizTotal = 0;
+      document.querySelectorAll('.quizObtained').forEach((input) => quizObtained += parseFloat(input.value) || 0);
+      document.querySelectorAll('.quizTotal').forEach((input) => quizTotal += parseFloat(input.value) || 0);
+      const quizWeightage = quizTotal > 0 ? (quizObtained / quizTotal) * 15 : 0;
+
+      let assignmentObtained = 0, assignmentTotal = 0;
+      document.querySelectorAll('.assignmentObtained').forEach((input) => assignmentObtained += parseFloat(input.value) || 0);
+      document.querySelectorAll('.assignmentTotal').forEach((input) => assignmentTotal += parseFloat(input.value) || 0);
+      const assignmentWeightage = assignmentTotal > 0 ? (assignmentObtained / assignmentTotal) * 10 : 0;
+
+      const midWeightage = midTotal > 0 ? (midObtained / midTotal) * 25 : 0;
+      const finalWeightage = finalTotal > 0 ? (finalObtained / finalTotal) * 50 : 0;
+
+      let labWeightage = 0;
+      if (labAvailable) {
+        const labMidObtained = parseFloat(document.getElementById('labMidObtained').value) || 0;
+        const labMidTotal = parseFloat(document.getElementById('labMidTotal').value) || 0;
+        const labFinalObtained = parseFloat(document.getElementById('labFinalObtained').value) || 0;
+        const labFinalTotal = parseFloat(document.getElementById('labFinalTotal').value) || 0;
+
+        let labAssignmentObtained = 0, labAssignmentTotal = 0;
+        document.querySelectorAll('.labAssignmentObtained').forEach((input) => labAssignmentObtained += parseFloat(input.value) || 0);
+        document.querySelectorAll('.labAssignmentTotal').forEach((input) => labAssignmentTotal += parseFloat(input.value) || 0);
+
+        const labAssignmentWeightage = labAssignmentTotal > 0 ? (labAssignmentObtained / labAssignmentTotal) * 25 : 0;
+        const labMidWeightage = labMidTotal > 0 ? (labMidObtained / labMidTotal) * 25 : 0;
+        const labFinalWeightage = labFinalTotal > 0 ? (labFinalObtained / labFinalTotal) * 50 : 0;
+
+        labWeightage = labAssignmentWeightage + labMidWeightage + labFinalWeightage;
+      }
+
+      let theoryMarks = quizWeightage + assignmentWeightage + midWeightage + finalWeightage;
+      let labMarks = labWeightage;
+
+      if (creditHours === 4) {
+        theoryMarks = theoryMarks * 0.75;
+        labMarks = labMarks * 0.25;
+      } else if (creditHours === 3) {
+        theoryMarks = theoryMarks * 0.67;
+        labMarks = labMarks * 0.33;
+      }
+
+      let totalMarks = theoryMarks + labMarks;
+      totalMarks = Math.ceil(totalMarks);
+
+      let grade = '';
+      let emoji = '';
+      if (totalMarks >= 85) { grade = 'A'; emoji = '🎉'; }
+      else if (totalMarks >= 80) { grade = 'A-'; emoji = '😊'; }
+      else if (totalMarks >= 75) { grade = 'B+'; emoji = '🙂'; }
+      else if (totalMarks >= 71) { grade = 'B'; emoji = '😐'; }
+      else if (totalMarks >= 67) { grade = 'B-'; emoji = '😕'; }
+      else if (totalMarks >= 65) { grade = 'C+'; emoji = '😟'; }
+      else if (totalMarks >= 60) { grade = 'C'; emoji = '😢'; }
+      else if (totalMarks >= 55) { grade = 'D+'; emoji = '😞'; }
+      else if (totalMarks >= 50) { grade = 'D'; emoji = '😔'; }
+      else { grade = 'F'; emoji = '😱'; }
+
+      // Show the result in the custom modal
+      document.getElementById('modalScore').innerText = `Total Marks: ${totalMarks} / 100`;
+      document.getElementById('modalGrade').innerText = `Grade: ${grade}`;
+      document.getElementById('modalEmoji').innerText = emoji;
+      document.getElementById('resultModal').style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('resultModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      if (event.target == document.getElementById('resultModal')) {
+        closeModal();
+      }
+    }
+  </script>
+</body>
+</html>
